@@ -1,6 +1,7 @@
 import { createGlobalStyle } from "styled-components";
+import { Theme } from "./styled";
 
-export default createGlobalStyle`
+export default createGlobalStyle<Theme>`
 * {
   margin:0;
   padding:0;
@@ -12,5 +13,4 @@ body {
   color: ${props => props.theme.colors.text};
   font: 400 16px Roboto, sans-serif;
 }
-
 `
