@@ -1,7 +1,11 @@
-import { styled } from "@material-ui/core";
+import styled from "styled-components";
 
 const Message = ({ user, message }) => {
-    return <Container></Container>;
+    return (
+        <Container>
+            <p>{message.message}</p>
+        </Container>
+    );
 };
 
 export default Message;

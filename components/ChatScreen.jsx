@@ -8,6 +8,9 @@ import AttachFileIcon from "@material-ui/icons/AttachFile";
 import { useCollection } from "react-firebase-hooks/firestore";
 import InsertEmoticonIcon from "@material-ui/icons/InsertEmoticon";
 import MicIcon from "@material-ui/icons/Mic";
+import { useState } from "react";
+import firebase from "firebase";
+import Message from "./Message";
 
 const ChatScreen = ({ chat, messages }) => {
     const [user] = useAuthState(auth);
@@ -19,6 +22,7 @@ const ChatScreen = ({ chat, messages }) => {
             .collection("messages")
             .orderBy("timestamp", "asc")
     );
+    const [input, setInput] = useState("");
 
     const showMessages = () => {
         if (messagesSnapshot) {
@@ -32,7 +36,37 @@ const ChatScreen = ({ chat, messages }) => {
                     }}
                 />
             ));
+        } else {
+            return JSON.parse(messages).map((message) => {
+                return (
+                    <Message
+                        key={message.id}
+                        user={message.user}
+                        message={message}
+                    />
+                );
+            });
         }
+    };
+
+    const sendMessage = (e) => {
+        e.preventDefault();
+
+        db.collection("users").doc(user.uid).set(
+            {
+                lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
+            },
+            { merge: true }
+        );
+
+        db.collection("chats").doc(router.query.id).collection("messages").add({
+            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+            message: input,
+            user: user.email,
+            photoURL: user.photoURL,
+        });
+
+        setInput("");
     };
 
     return (
@@ -54,13 +88,24 @@ const ChatScreen = ({ chat, messages }) => {
             </Header>
 
             <MessageContainer>
-                {/* {showMessages()} */}
+                {showMessages()}
                 <EndOfMessage />
             </MessageContainer>
 
             <InputContainer>
                 <InsertEmoticonIcon />
-                <Input />
+                <Input
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                />
+                <button
+                    hidden
+                    disabled={!input}
+                    type="submit"
+                    onClick={sendMessage}
+                >
+                    Send message
+                </button>
                 <MicIcon />
             </InputContainer>
         </Container>
