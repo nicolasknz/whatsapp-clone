@@ -11,6 +11,8 @@ import MicIcon from "@material-ui/icons/Mic";
 import { useState } from "react";
 import firebase from "firebase";
 import Message from "./Message";
+import getRecipientEmail from "./../utils/getRecipientEmail";
+import TimeAgo from "timeago-react";
 
 const ChatScreen = ({ chat, messages }) => {
     const [user] = useAuthState(auth);
@@ -24,8 +26,21 @@ const ChatScreen = ({ chat, messages }) => {
     );
     const [input, setInput] = useState("");
 
+    const [recipientSnapShot] = useCollection(
+        db
+            .collection("users")
+            .where("email", "==", getRecipientEmail(chat.users, user))
+    );
+
     const showMessages = () => {
         if (messagesSnapshot) {
+            const mensagems = messagesSnapshot.docs.map((message) =>
+                console.log(message.message)
+            );
+
+            console.log("true");
+            console.log(mensagems);
+            console.log("-----");
             return messagesSnapshot.docs.map((message) => (
                 <Message
                     key={message.id}
@@ -34,15 +49,22 @@ const ChatScreen = ({ chat, messages }) => {
                         ...message.data(),
                         timestamp: message.data().timestamp?.toDate().getTime(),
                     }}
+                    origin={true}
                 />
             ));
         } else {
+            console.log("false");
+            console.log(
+                JSON.parse(messages).map((mensagem) => mensagem.message)
+            );
+            console.log("-----");
             return JSON.parse(messages).map((message) => {
                 return (
                     <Message
                         key={message.id}
                         user={message.user}
                         message={message}
+                        origin={false}
                     />
                 );
             });
@@ -69,13 +91,33 @@ const ChatScreen = ({ chat, messages }) => {
         setInput("");
     };
 
+    const recipient = recipientSnapShot?.docs?.[0]?.data();
+    const recipientEmail = getRecipientEmail(chat.users, user);
+
     return (
         <Container>
             <Header>
-                <Avatar />
+                {recipient ? (
+                    <Avatar src={recipient?.photoURL} />
+                ) : (
+                    <Avatar>{recipientEmail[0]}</Avatar>
+                )}
                 <HeaderInformation>
-                    <h3>Rec email</h3>
-                    <p>Last seen...</p>
+                    <h3>{recipientEmail}</h3>
+                    {recipientSnapShot ? (
+                        <p>
+                            Last active:{" "}
+                            {recipient?.lastSeen?.toDate() ? (
+                                <TimeAgo
+                                    datetime={recipient?.lastSeen?.toDate()}
+                                />
+                            ) : (
+                                "Unavailable"
+                            )}
+                        </p>
+                    ) : (
+                        <p>Loading last active...</p>
+                    )}
                 </HeaderInformation>
                 <HeaderIcons>
                     <IconButton>
