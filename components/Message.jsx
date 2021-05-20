@@ -11,7 +11,7 @@ const Message = ({ user, message, origin }) => {
     return (
         <Container>
             <TypeOfMessage>
-                {message.message} ---- {origin ? "true" : "false"}
+                {message.message}
                 <Timestamp>
                     {message.timestamp
                         ? moment(message.timestamp).format("LT")

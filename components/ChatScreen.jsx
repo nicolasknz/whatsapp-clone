@@ -47,7 +47,6 @@ const ChatScreen = ({ chat, messages }) => {
                         ...message.data(),
                         timestamp: message.data().timestamp?.toDate().getTime(),
                     }}
-                    origin={true}
                 />
             ));
         } else {
@@ -57,7 +56,6 @@ const ChatScreen = ({ chat, messages }) => {
                         key={message.id}
                         user={message.user}
                         message={message}
-                        origin={false}
                     />
                 );
             });
