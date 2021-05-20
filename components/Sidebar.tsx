@@ -26,8 +26,6 @@ const Sidebar = () => {
 
         let chatExists = chatAlreadyExists(input);
 
-        console.log(chatExists);
-
         if (
             EmailValidator.validate(input) &&
             !chatExists &&
@@ -41,8 +39,6 @@ const Sidebar = () => {
     };
 
     const chatAlreadyExists = (recipientEmail) => {
-        console.log("a", recipientEmail);
-        debugger;
         return !!chatsSnapshot?.docs.find(
             (chat) =>
                 chat.data().users.find((user) => user == recipientEmail)

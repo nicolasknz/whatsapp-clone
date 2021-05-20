@@ -39,13 +39,6 @@ const ChatScreen = ({ chat, messages }) => {
 
     const showMessages = () => {
         if (messagesSnapshot) {
-            const mensagems = messagesSnapshot.docs.map((message) =>
-                console.log(message.message)
-            );
-
-            console.log("true");
-            console.log(mensagems);
-            console.log("-----");
             return messagesSnapshot.docs.map((message) => (
                 <Message
                     key={message.id}
@@ -58,11 +51,6 @@ const ChatScreen = ({ chat, messages }) => {
                 />
             ));
         } else {
-            console.log("false");
-            console.log(
-                JSON.parse(messages).map((mensagem) => mensagem.message)
-            );
-            console.log("-----");
             return JSON.parse(messages).map((message) => {
                 return (
                     <Message
@@ -204,7 +192,7 @@ export const MessageContainer = styled.div`
 `;
 
 export const EndOfMessage = styled.div`
-    margin-bottom: 50px;
+    padding-bottom: 50px;
 `;
 
 export const InputContainer = styled.form`

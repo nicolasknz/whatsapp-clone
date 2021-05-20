@@ -23,8 +23,6 @@ const Chat = ({ id, users }) => {
 
     const recipientEmail = getRecipientEmail(users, user);
 
-    console.log(recipientEmail);
-
     return (
         <Container onClick={enterChat}>
             {recipient ? (
