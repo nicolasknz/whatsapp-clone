@@ -1,4 +1,19 @@
-import { Avatar, Button, IconButton } from "@material-ui/core";
+import {
+    Avatar,
+    Box,
+    Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogContentText,
+    DialogTitle,
+    FormGroup,
+    IconButton,
+    Input,
+    Modal,
+    Slide,
+    Slider,
+} from "@material-ui/core";
 import styled from "styled-components";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
 import ChatIcon from "@material-ui/icons/Chat";
@@ -9,6 +24,15 @@ import Chat from "./Chat";
 import { auth, db } from "../firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useCollection } from "react-firebase-hooks/firestore";
+import React, { forwardRef, useState } from "react";
+import { TransitionProps } from "@material-ui/core/transitions/transition";
+
+const Transition = React.forwardRef(function Transition(
+    props: TransitionProps & { children?: React.ReactElement<any, any> },
+    ref: React.Ref<unknown>
+) {
+    return <Slide direction="up" ref={ref} {...props} />;
+});
 
 const Sidebar = () => {
     const [user] = useAuthState(auth);
@@ -16,24 +40,23 @@ const Sidebar = () => {
         .collection("chats")
         .where("users", "array-contains", user.email);
     const [chatsSnapshot, loading, error] = useCollection(userChatRef);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [emailInput, setEmailInput] = useState("");
 
     const createChat = () => {
-        const input = prompt(
-            "Please enter and email adress for the user you wish to chat with"
-        );
+        console.log("submit");
+        if (!emailInput) return null;
 
-        if (!input) return null;
-
-        let chatExists = chatAlreadyExists(input);
+        let chatExists = chatAlreadyExists(emailInput);
 
         if (
-            EmailValidator.validate(input) &&
+            EmailValidator.validate(emailInput) &&
             !chatExists &&
-            input !== user.email
+            emailInput !== user.email
         ) {
             // Add chat to the DB chats collection
             db.collection("chats").add({
-                users: [user.email, input],
+                users: [user.email, emailInput],
             });
         }
     };
@@ -48,6 +71,46 @@ const Sidebar = () => {
 
     return (
         <Container>
+            <Dialog
+                open={isModalOpen}
+                TransitionComponent={Transition}
+                keepMounted
+                onClose={() => {}}
+                aria-labelledby="alert-dialog-slide-title"
+                aria-describedby="alert-dialog-slide-description"
+            >
+                <DialogTitle id="alert-dialog-slide-title">
+                    New chat
+                </DialogTitle>
+                <DialogContent>
+                    <DialogContentText id="alert-dialog-slide-description">
+                        Please enter and email adress for the user you wish to
+                        chat with
+                        <FormGroup onSubmit={createChat}>
+                            <Input
+                                onChange={(e) => setEmailInput(e.target.value)}
+                            />
+                        </FormGroup>
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button
+                        onClick={() => setIsModalOpen(!isModalOpen)}
+                        color="primary"
+                    >
+                        Disagree
+                    </Button>
+                    <Button
+                        onClick={() => {
+                            setIsModalOpen(!isModalOpen);
+                            createChat();
+                        }}
+                        color="primary"
+                    >
+                        Agree
+                    </Button>
+                </DialogActions>
+            </Dialog>
             <Header>
                 <UserAvatar
                     src={user.photoURL}
@@ -69,7 +132,9 @@ const Sidebar = () => {
                 <SearchInput placeholder="Search in chats" />
             </Search>
 
-            <SidebarButton onClick={createChat}>Start a new chat</SidebarButton>
+            <SidebarButton onClick={() => setIsModalOpen(!isModalOpen)}>
+                Start a new chat
+            </SidebarButton>
 
             {chatsSnapshot?.docs.map((chat) => (
                 <Chat key={chat.id} id={chat.id} users={chat.data().users} />
