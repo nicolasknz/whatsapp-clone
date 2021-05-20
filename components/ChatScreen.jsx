@@ -8,7 +8,7 @@ import AttachFileIcon from "@material-ui/icons/AttachFile";
 import { useCollection } from "react-firebase-hooks/firestore";
 import InsertEmoticonIcon from "@material-ui/icons/InsertEmoticon";
 import MicIcon from "@material-ui/icons/Mic";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import firebase from "firebase";
 import Message from "./Message";
 import getRecipientEmail from "./../utils/getRecipientEmail";
@@ -25,12 +25,17 @@ const ChatScreen = ({ chat, messages }) => {
             .orderBy("timestamp", "asc")
     );
     const [input, setInput] = useState("");
+    const endOfMessagesRef = useRef(null);
 
     const [recipientSnapShot] = useCollection(
         db
             .collection("users")
             .where("email", "==", getRecipientEmail(chat.users, user))
     );
+
+    // useEffect(() => {
+    //     scrollToBottom();
+    // }, []);
 
     const showMessages = () => {
         if (messagesSnapshot) {
@@ -71,6 +76,13 @@ const ChatScreen = ({ chat, messages }) => {
         }
     };
 
+    const scrollToBottom = () => {
+        endOfMessagesRef.current.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+        });
+    };
+
     const sendMessage = (e) => {
         e.preventDefault();
 
@@ -89,6 +101,7 @@ const ChatScreen = ({ chat, messages }) => {
         });
 
         setInput("");
+        scrollToBottom();
     };
 
     const recipient = recipientSnapShot?.docs?.[0]?.data();
@@ -131,7 +144,7 @@ const ChatScreen = ({ chat, messages }) => {
 
             <MessageContainer>
                 {showMessages()}
-                <EndOfMessage />
+                <EndOfMessage ref={endOfMessagesRef} />
             </MessageContainer>
 
             <InputContainer>
@@ -190,7 +203,9 @@ export const MessageContainer = styled.div`
     min-height: 90vh;
 `;
 
-export const EndOfMessage = styled.div``;
+export const EndOfMessage = styled.div`
+    margin-bottom: 50px;
+`;
 
 export const InputContainer = styled.form`
     display: flex;
